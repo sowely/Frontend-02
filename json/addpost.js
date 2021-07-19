@@ -51,8 +51,8 @@
     }
     ],
     "buttons":[
-    {
-        "text":"Create Post"
-    }
+        {
+            "text":"Create Post"
+        }
     ]
 }

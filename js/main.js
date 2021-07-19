@@ -8,7 +8,7 @@ const requestsURL = [
 	'json/signup.js'
 ];
 const request = new XMLHttpRequest();
-request.open('GET', requestsURL[4]); // МЕНЯТЬ ТУТ [0 - 4]
+request.open('GET', requestsURL[0]); // МЕНЯТЬ ТУТ [0 - 4]
 request.responseType = 'text';
 request.send();
 
@@ -20,20 +20,22 @@ request.onload = function () {
 
 function createPage(jsonObj) {
 	const keys = Object.keys(jsonObj)
-	title.textContent = jsonObj.name.toUpperCase();
+	title.textContent = jsonObj.name.toUpperCase(); // title
+
 
 	//fields
-	jsonObj["fields"].forEach((elem, i) => {
+	jsonObj[keys[1]].forEach((elem, i) => {
 		const fieldsKeys = Object.keys(elem);
 		fieldsKeys.forEach(el => {
 			switch (el) {
 				case "input":
 					createInput(elem[el], i);
 					break;
-				// case "buttons"
 				case "label":
-					createLabel(elem, i)
+					createLabel(elem, i);
+					break;
 				default:
+					console.log(elem)
 					break;
 			}
 		});
@@ -43,24 +45,30 @@ function createPage(jsonObj) {
 	jsonObj["references"].forEach((elem) => {
 		const referencesKeys = Object.keys(elem);
 		// console.log(referencesKeys)
+		if (elem["input"]) {
+			createInput(elem["input"], 'tofix')
+			return 0;
+		}
 		createReference(elem);
-		referencesKeys.forEach(el => {
-
-			if (el == "input") {
-				// console.log(elem[el])
-				createInput(elem[el], 'tofix')
-				return 0;
-			}
-			else {
-				return 0;
-			}
-		});
 	});
 
 	//buttons
+	const buttons = [];
 	jsonObj["buttons"].forEach((elem, index) => {
-		createButton(elem, index);
+		buttons[index] = createButton(elem, index);
+		// console.log(buttons)
+		// const div = document.createElement("div");
+		// div.insertAdjacentHTML("beforeend",button);
+
+		// section.appendChild(div);
 	});
+	if (buttons.length) {
+		const div = document.createElement("div");
+		buttons.forEach(button => {
+			div.appendChild(button);
+		});
+		section.appendChild(div);
+	}
 
 }
 
@@ -90,20 +98,21 @@ function createInput(obj, i) {
 	}
 
 
+
 	const input = document.createElement("input");
 	input.classList.add("mb-3", "form-control");
 	input.type = obj["type"];
 	if (obj["placeholder"]) {
 		input.placeholder = obj["placeholder"];
 	}
-	if (obj["required"]) {
+	if (obj["required"] == true) {
 		input.required = true;
 	}
-	if (obj["checked"]) {
+	if (obj["checked"] == true) {
 		input.checked = true;
 		input.classList.remove("form-control");
 	}
-	if (obj["multiple"]) {
+	if (obj["multiple"] == true) {
 		input.multiple = true;
 	}
 	if (obj["filetype"]) {
@@ -119,11 +128,25 @@ function createInput(obj, i) {
 					break;
 			}
 		});
-		input.accept = accept.join(",")
-		// console.log(input);
+		input.accept = accept.join(",");
+	}
+	if (obj["type"] == "color") {
+		input.setAttribute("list", `colors-${i}`);
+		// input.value = "#aaaaaa";
+		input.classList.add("input-color");
+		const datalist = document.createElement("datalist");
+		datalist.id = `colors-${i}`;
+		console.log(obj["colors"]);
+		obj["colors"].forEach(color => {
+			const option = document.createElement("option");
+			option.value = color;
+			datalist.appendChild(option);
+		});
+		section.appendChild(datalist)
 	}
 	if (obj["type"] == "checkbox") {
-		input.classList.remove("form-control");
+		input.classList.remove("form-control", "mb-3");
+		input.classList.add("me-2")
 	}
 	if (obj["mask"]) {
 		//mask
@@ -136,35 +159,40 @@ function createInput(obj, i) {
 function createReference(obj) {
 	const span = document.createElement("span");
 	const a = document.createElement("a");
-	const div = document.createElement("div");
-	span.textContent = obj["text without ref"];
-	span.classList.add("me-1");
+	// const div = document.createElement("div");
+	if (obj["text without ref"]) {
+		span.textContent = obj["text without ref"];
+		span.classList.add("me-1");
+		section.appendChild(span)
+	}
 	a.textContent = obj["text"];
+	a.classList.add("me-3", "mb-3")
 	a.setAttribute("href", obj["ref"]);
-	div.classList.add("mb-3");
-	div.appendChild(span);
-	div.appendChild(a);
-	section.appendChild(div);
-
+	// div.classList.add("mb-3");
+	// div.appendChild(span);
+	// div.appendChild(a);
+	// section.appendChild(div);
+	section.appendChild(a)
 }
 
 function createButton(obj, index) {
 	const button = document.createElement("button");
 	button.type = "button";
-	button.classList.add("btn", "mb-3", "me-3");
+	button.classList.add("btn", "mb-3", "me-2", "mt-3");
 	if (index == 0) {
 		button.classList.add("btn-primary");
 	} else {
 		button.classList.add("btn-outline-primary");
 	}
 	button.textContent = obj["text"];
-	section.appendChild(button);
+	// section.appendChild(button);
+	return button;
 }
 
 function createLabel(obj, i) {
 	const label = document.createElement("label");
 	// console.log(obj)
-	label.classList.add("form-control")
+	// label.classList.add("form-control")
 	label.setAttribute("for", i)
 	label.textContent = obj["label"]
 
