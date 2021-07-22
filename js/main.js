@@ -1,26 +1,69 @@
-const title = document.querySelector('.title');
-const section = document.querySelector('.main');
-const requestsURL = [
-	'json/addpost.js',
-	'json/colorsheme.js',
-	'json/interview.js',
-	'json/signin.js',
-	'json/signup.js'
-];
+const section = document.querySelector('.form');
+const inputFile = document.querySelector('#select-file');
+const btnReset = document.querySelector('.btn-reset');
+const filesMenu = document.querySelector('.menu');
+let selectedFiles;
+let file;
+const reader = new FileReader();
 const request = new XMLHttpRequest();
-request.open('GET', requestsURL[0]); // МЕНЯТЬ ТУТ [0 - 4]
-request.responseType = 'text';
-request.send();
 
-request.onload = function () {
-	const jsonText = request.response;
-	const jsonObj = JSON.parse(jsonText);
-	createPage(jsonObj);
+inputFile.addEventListener('change', () => {
+	selectedFiles = document.querySelector('#select-file').files;
+	filesMenu.innerHTML = '';
+
+	const select = document.createElement("select");
+	for (let i = 0; i < selectedFiles.length; i++) {
+		const file = selectedFiles[i];
+		const option = document.createElement("option");
+		option.textContent = file.name;
+		select.appendChild(option);
+	}
+	select.size = selectedFiles.length;
+	select.classList.add("mb-1", "form-control");
+	filesMenu.appendChild(select);
+
+	file = selectedFiles[0];
+	parser(file);
+})
+
+filesMenu.addEventListener('click', (e) => {
+	for (let i = 0; i < selectedFiles.length; i++) {
+		if (e.target.textContent === selectedFiles[i].name) {
+			file = selectedFiles[i];
+			parser(file);
+			break;
+		}
+	}
+})
+
+btnReset.addEventListener('click', () => {
+	section.innerHTML = '';
+	filesMenu.innerHTML = '';
+})
+
+function parser(file) {
+	section.innerHTML = '';
+	reader.readAsDataURL(file);
+	reader.onload = function () {
+		request.open('GET', reader.result);
+		request.responseType = 'text';
+		request.send();
+	};
+
+	request.onload = function () {
+		const jsonText = request.response;
+		const jsonObj = JSON.parse(jsonText);
+		// console.log(jsonObj)
+		createPage(jsonObj);
+	}
+
 }
+
+
 
 function createPage(jsonObj) {
 	const keys = Object.keys(jsonObj)
-	title.textContent = jsonObj.name.toUpperCase(); // title
+	// title.textContent = jsonObj.name.toUpperCase(); // title
 
 
 	//fields
@@ -42,34 +85,90 @@ function createPage(jsonObj) {
 	});
 
 	//references
-	jsonObj["references"].forEach((elem) => {
-		const referencesKeys = Object.keys(elem);
-		// console.log(referencesKeys)
-		if (elem["input"]) {
-			createInput(elem["input"], 'tofix')
-			return 0;
-		}
-		createReference(elem);
-	});
-
-	//buttons
-	const buttons = [];
-	jsonObj["buttons"].forEach((elem, index) => {
-		buttons[index] = createButton(elem, index);
-		// console.log(buttons)
-		// const div = document.createElement("div");
-		// div.insertAdjacentHTML("beforeend",button);
-
-		// section.appendChild(div);
-	});
-	if (buttons.length) {
-		const div = document.createElement("div");
-		buttons.forEach(button => {
-			div.appendChild(button);
+	if (jsonObj["references"]) {
+		jsonObj["references"].forEach((elem) => {
+			const referencesKeys = Object.keys(elem);
+			// console.log(referencesKeys)
+			if (elem["input"]) {
+				createInput(elem["input"], 'tofix')
+				return 0;
+			}
+			createReference(elem);
 		});
-		section.appendChild(div);
 	}
 
+	//buttons
+	if (jsonObj["references"]) {
+		const buttons = [];
+		jsonObj["buttons"].forEach((elem, index) => {
+			buttons[index] = createButton(elem, index);
+			// console.log(buttons)
+			// const div = document.createElement("div");
+			// div.insertAdjacentHTML("beforeend",button);
+
+			// section.appendChild(div);
+		});
+		if (buttons.length) {
+			const div = document.createElement("div");
+			buttons.forEach(button => {
+				div.appendChild(button);
+			});
+			section.appendChild(div);
+		}
+	}
+	//inputs mask
+	const inputs = document.querySelectorAll(`input[data-mask]`);
+	for (let i = 0; i < inputs.length; i++) {
+		const input = inputs[i];
+		input.addEventListener('input', mask)
+	}
+}
+
+let mask = function (e) {
+	let input = e.target;
+	let inputValue = input.value;
+	let mask = input.dataset.mask;
+
+	inputValue = getInputNumbers(input); //числа
+	// console.log(inputValue);
+	let string = ''
+	// let start = mask.indexOf('9');
+	// console.log('start: ',start)
+	// string += mask.substring(0, start)
+	console.log(inputValue)
+
+	for (let i = start; i < mask.length; i++) {
+
+
+		// for (let j = 0; j < inputValue.length; j++) {
+		// 	if (inputValue[i]) {
+		// 		string += inputValue[i]
+		// 	}
+
+		// }
+
+
+		if (mask[i] === '9') {
+			string[i] = inputValue[i - start];
+		} else {
+			string[i] = mask[i];
+		}
+		// console.log('inputValue.length ', inputValue.length)
+		// console.log('inputValue[i] ', inputValue[i])
+
+	}
+	input.value = string;
+	// console.log('indexes', indexes)
+	// 	input.value = inputValue;
+	// }
+	// input.value = 'pizdec';
+	// inputValue = '+7 9' + inputValue;/
+	// let myinput = getInputNumbers(input);
+}
+
+function getInputNumbers(input) {
+	// Только числа
+	return input.value.replace(/\D/g, '');
 }
 
 function createInput(obj, i) {
@@ -136,7 +235,7 @@ function createInput(obj, i) {
 		input.classList.add("input-color");
 		const datalist = document.createElement("datalist");
 		datalist.id = `colors-${i}`;
-		console.log(obj["colors"]);
+		// console.log(obj["colors"]);
 		obj["colors"].forEach(color => {
 			const option = document.createElement("option");
 			option.value = color;
@@ -149,7 +248,10 @@ function createInput(obj, i) {
 		input.classList.add("me-2")
 	}
 	if (obj["mask"]) {
-		//mask
+		//mask(string) передаем строку маски в функцию
+		input.type = 'text';
+		input.setAttribute('maxlength', obj["mask"].length);
+		input.setAttribute('data-mask', obj["mask"]);
 		input.placeholder = obj["mask"];
 	}
 	input.setAttribute("id", i);
@@ -181,6 +283,7 @@ function createButton(obj, index) {
 	button.classList.add("btn", "mb-3", "me-2", "mt-3");
 	if (index == 0) {
 		button.classList.add("btn-primary");
+		button.type = "submit";
 	} else {
 		button.classList.add("btn-outline-primary");
 	}
@@ -200,4 +303,3 @@ function createLabel(obj, i) {
 	section.appendChild(label)
 
 }
-

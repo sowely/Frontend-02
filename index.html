@@ -16,8 +16,20 @@
   </head>
   <body>
     <div class="container">
-      <h2 class="title mb-3 mt-3"></h1>
-        <section class="main mb-3 "></section>
-      </div>
+      <!-- <h2 class="title mb-3 mt-3"></h2> -->
+      <form class="mt-3 mb-5" action="#" method="post">
+        <label class="" for="select-file">Select JS/JSON files</label>
+        <input
+          id="select-file"
+          class="form-control mb-1"
+          type="file"
+          accept="application/json,application/javascript"
+          multiple
+        />
+        <div class="menu"></div>
+        <button class="btn btn-secondary btn-reset" type="reset">Reset</button>
+      </form>
+      <form class="form mb-3" action=""></form>
+    </div>
   </body>
 </html>
