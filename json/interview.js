@@ -97,12 +97,12 @@
     ],
     "references":[
         {
-            "input":{
-              "type":"checkbox",
-              "required":true,
-              "checked":"false"
-            }
-          },
+          "input":{
+            "type":"checkbox",
+            "required":true,
+            "checked":"false"
+          }
+        },
         {
             "text without ref":"I accept the",
             "text":"Terms & Conditions",

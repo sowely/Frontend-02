@@ -120,55 +120,34 @@ function createPage(jsonObj) {
 	const inputs = document.querySelectorAll(`input[data-mask]`);
 	for (let i = 0; i < inputs.length; i++) {
 		const input = inputs[i];
-		input.addEventListener('input', mask)
+		input.addEventListener('keydown', mask)
 	}
 }
 
-let mask = function (e) {
+function mask(e) {
 	let input = e.target;
 	let inputValue = input.value;
-	let mask = input.dataset.mask;
+	let inputPos = inputValue.length;
+	let mask = input.dataset.mask.replace(/9/g, '_');
+	let key = e.key;
+	let keyCode = e.keyCode; //number
 
-	inputValue = getInputNumbers(input); //числа
-	// console.log(inputValue);
-	let string = ''
-	// let start = mask.indexOf('9');
-	// console.log('start: ',start)
-	// string += mask.substring(0, start)
-	console.log(inputValue)
+	if ((keyCode < 58 && keyCode > 47) || (keyCode < 106 && keyCode > 95)) {
+		e.preventDefault();
 
-	for (let i = start; i < mask.length; i++) {
-
-
-		// for (let j = 0; j < inputValue.length; j++) {
-		// 	if (inputValue[i]) {
-		// 		string += inputValue[i]
-		// 	}
-
-		// }
-
-
-		if (mask[i] === '9') {
-			string[i] = inputValue[i - start];
-		} else {
-			string[i] = mask[i];
+		while (mask[inputPos] !== '_' && inputValue.length < mask.length) {
+			input.value += mask[inputPos];
+			inputPos++;
 		}
-		// console.log('inputValue.length ', inputValue.length)
-		// console.log('inputValue[i] ', inputValue[i])
-
+		if (inputPos >= mask.length) return;
+		input.value += key;
+		// console.log(input.value)
+		// } else {
+	} else {
+		if ([8, 37, 39, 46].includes(keyCode)) return 0;
+		e.preventDefault();
+		return 0;
 	}
-	input.value = string;
-	// console.log('indexes', indexes)
-	// 	input.value = inputValue;
-	// }
-	// input.value = 'pizdec';
-	// inputValue = '+7 9' + inputValue;/
-	// let myinput = getInputNumbers(input);
-}
-
-function getInputNumbers(input) {
-	// Только числа
-	return input.value.replace(/\D/g, '');
 }
 
 function createInput(obj, i) {
